@@ -257,7 +257,7 @@ sismember [key] [member]
 
 smembers [key]
 
-## 将元素从一个集合移动到另一个集合中
+### 将元素从一个集合移动到另一个集合中
 
 smove [source] [dest] [member]
 
