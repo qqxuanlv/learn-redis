@@ -1063,7 +1063,8 @@ sentinel auth-pass mymaster 123456
 缺点：
 
 Redis 较难支持在线扩容，在集群容量达到上限时在线扩容会变得很复杂。
-三、Cluster 集群
+
+### 三、Cluster 集群
 
 Redis 的哨兵模式基本已经可以实现高可用，读写分离 ，但是在这种模式下每台 Redis 服务器都存储相同的数据，很浪费内存，所以在 redis3.0 上加入了 Cluster 集群模式，实现了 Redis 的分布式存储，也就是说每台 Redis 节点上存储不同的内容。
 
