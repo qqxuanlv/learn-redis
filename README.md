@@ -285,13 +285,159 @@ sunionstore [dest] [key1] [key2] ...
 
 sscan [key] [cursor] match [pattern] [count]
 
-#### 原理
+## Sorted Set: 有序集合
 
-虽然跟 java set 类似， 但是底层逻辑是不一样的。 redis 中 set 为了提高性能，支持随即插入和删除，不宜使用简单的数组结构 ，因为自带排序，每次插入的时候要重新找到插入点（二分法查找，数组比较适合，但是不适合链表）所以选用的基于跳跃链表的结构组成的，关于跳跃链表 你可以理解成
+Redis 有序集合和集合一样也是 string 类型元素的集合,且不允许重复的成员。
+
+不同的是每个元素都会关联一个 double 类型的分数。redis 正是通过分数来为集合中的成员进行从小到大的排序。
+
+有序集合的成员是唯一的,但分数(score)却可以重复。
+
+集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是 O(1)。 集合中最大的成员数为 232 - 1 (4294967295, 每个集合可存储 40 多亿个成员)。
+
+redis 中 sort set 为了提高性能，支持随即插入和删除，不宜使用简单的数组结构 ，因为自带排序，每次插入的时候要重新找到插入点（二分法查找，数组比较适合，但是不适合链表）所以选用的基于跳跃链表的结构组成的，关于跳跃链表 你可以理解成
 
 集合中 挑选出一些数据（这些数据有一定的间隔，举个例子 如数组 0 作为第一个 数组 4 作为第二个 数组 8 作为第三个） 作为 Level0 层 （最上层），
 
-## Sorted Set: 有序集合
+### 向集合内添加一个或者多个数据
+
+zadd [key] [score1] [member1] [score2] [member2] ...
+
+### 获取成员数量
+
+zcard [key]
+
+### 计算区间内的成员数量
+
+zcount [key] [min] [max]
+
+### 有序集合中对指定成员的分数加上增量 increment
+
+zincrby [key] [increment] [member]
+
+### 求交集插入到新的集合中
+
+zinterstore [destination] [numkeys] key [key ...]
+
+### 求区间范围内的元素数量
+
+zlexcount [key] [min] [max]
+
+### 通过索引返回成员
+
+zrange [key] [start] [stop] [WITHSCORES]
+
+```
+redis 127.0.0.1:6379> ZRANGE salary 0 -1 WITHSCORES             # 显示整个有序集成员
+1) "jack"
+2) "3500"
+3) "tom"
+4) "5000"
+5) "boss"
+6) "10086"
+
+```
+
+### 通过字典区间返回有序集合的成员。
+
+zrangebylex [key] [min] [max] [LIMIT offset count]
+
+```
+redis 127.0.0.1:6379> ZADD myzset 0 a 0 b 0 c 0 d 0 e 0 f 0 g
+(integer) 7
+redis 127.0.0.1:6379> ZRANGEBYLEX myzset - [c
+1) "a"
+2) "b"
+3) "c"
+redis 127.0.0.1:6379> ZRANGEBYLEX myzset - (c
+1) "a"
+2) "b"
+redis 127.0.0.1:6379> ZRANGEBYLEX myzset [aaa (g
+1) "b"
+2) "c"
+3) "d"
+4) "e"
+5) "f"
+```
+
+### 通过分数返回有序集合指定区间内的成员
+
+ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT offset count]
+
+```
+redis 127.0.0.1:6379> ZADD salary 2500 jack                        # 测试数据
+(integer) 0
+redis 127.0.0.1:6379> ZADD salary 5000 tom
+(integer) 0
+redis 127.0.0.1:6379> ZADD salary 12000 peter
+(integer) 0
+
+redis 127.0.0.1:6379> ZRANGEBYSCORE salary -inf +inf               # 显示整个有序集
+1) "jack"
+2) "tom"
+3) "peter"
+
+redis 127.0.0.1:6379> ZRANGEBYSCORE salary -inf +inf WITHSCORES    # 显示整个有序集及成员的 score 值
+1) "jack"
+2) "2500"
+3) "tom"
+4) "5000"
+5) "peter"
+6) "12000"
+
+redis 127.0.0.1:6379> ZRANGEBYSCORE salary -inf 5000 WITHSCORES    # 显示工资 <=5000 的所有成员
+1) "jack"
+2) "2500"
+3) "tom"
+4) "5000"
+
+redis 127.0.0.1:6379> ZRANGEBYSCORE salary (5000 400000            # 显示工资大于 5000 小于等于 400000 的成员
+1) "peter"
+```
+
+### 返回有序集合中指定成员的索引
+
+zrank [key] [member]
+
+### 删除元素
+
+zrem [key] [member] [member ...]
+
+### 移除有序集合中给定的字典区间的所有成员
+
+zremrangebylex [key] [min] [max]
+
+### 移除有序集合中给定的排名区间的所有成员
+
+zremrangebyrank [key] [start] [stop]
+
+### 移除有序集合中给定的分数区间的所有成员
+
+zremrangebyscore key min max
+
+### 返回有序集中指定区间内的成员，通过索引，分数从高到低
+
+zrevrange [key] [start] [stop] [WITHSCORES]
+
+### 返回有序集中指定分数区间内的成员，分数从高到低排序
+
+zrevrangebyscore [key] [max] [min] [WITHSCORES]
+
+### 返回有序集合中指定成员的排名，有序集成员按分数值递减(从大到小)排序
+
+zrevrank key member
+
+### 返回有序集中，成员的分数值
+
+zscore [key] [member]
+
+### 计算给定的一个或多个有序集的并集，并存储在新的 key 中
+
+zunionstore destination numkeys key [key ...]
+
+### 迭代有序集合中的元素（包括元素成员和元素分值）
+
+zscan key cursor [MATCH pattern] [COUNT count]
 
 # Redis 其他类型
 
