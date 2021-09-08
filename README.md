@@ -1120,28 +1120,29 @@ redis-4.1.0/lib/redis/client.rb:124:in `call': ERR Slot 935 is already busy
 
 
 
-Redis 时间复杂度O(n)级别的指令
-String类型
+# Redis 时间复杂度O(n)级别的指令
+
+## String类型
 MSET、MSETNX、MGET
-List类型
+## List类型
 LPUSH、RPUSH、LRANGE、LINDEX、LSET、LINSERT
 LINDEX、LSET、LINSERT 这三个命令谨慎使用
 
-Hash类型
+## Hash类型
 HDEL、HGETALL、HKEYS/HVALS
 HGETALL、HKEYS/HVALS 谨慎使用
 
-Set类型
+## Set类型
 SADD、SREM、SRANDMEMBER、SPOP、
 SMEMBERS、SUNION/SUNIONSTORE、SINTER/SINTERSTORE、SDIFF/SDIFFSTORE
 第二行命令谨慎使用
 
-Sorted Set类型
+## Sorted Set类型
 ZADD、ZREM、
 ZRANGE/ZREVRANGE、ZRANGEBYSCORE/ZREVRANGEBYSCORE、ZREMRANGEBYRANK/ZREMRANGEBYSCORE
 第二行时间复杂度 O(log(N)+M)，需要谨慎使用
 
-其他常用命令
+## 其他常用命令
 DEL、KEYS
 KEYS 谨慎使用
 
