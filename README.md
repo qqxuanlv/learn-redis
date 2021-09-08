@@ -1115,3 +1115,33 @@ redis-4.1.0/lib/redis/client.rb:124:in `call': ERR Slot 935 is already busy
 在 Redis 的每一个节点上，都有这么两个东西，一个是插槽（slot），它的的取值范围是：0-16383。还有一个就是 cluster，可以理解为是一个集群管理的插件。当我们的存取的 Key 到达的时候，Redis 会根据 crc16 的算法得出一个结果，然后把结果对 16384 求余数，这样每个 key 都会对应一个编号在 0-16383 之间的哈希槽，通过这个值，去找到对应的插槽所对应的节点，然后直接自动跳转到这个对应的节点上进行存取操作。
 
 为了保证高可用，redis-cluster 集群引入了主从模式，一个主节点对应一个或者多个从节点，当主节点宕机的时候，就会启用从节点。当其它主节点 ping 一个主节点 A 时，如果半数以上的主节点与 A 通信超时，那么认为主节点 A 宕机了。如果主节点 A 和它的从节点 A1 都宕机了，那么该集群就无法再提供服务了。
+
+
+
+
+
+Redis 时间复杂度O(n)级别的指令
+String类型
+MSET、MSETNX、MGET
+List类型
+LPUSH、RPUSH、LRANGE、LINDEX、LSET、LINSERT
+LINDEX、LSET、LINSERT 这三个命令谨慎使用
+
+Hash类型
+HDEL、HGETALL、HKEYS/HVALS
+HGETALL、HKEYS/HVALS 谨慎使用
+
+Set类型
+SADD、SREM、SRANDMEMBER、SPOP、
+SMEMBERS、SUNION/SUNIONSTORE、SINTER/SINTERSTORE、SDIFF/SDIFFSTORE
+第二行命令谨慎使用
+
+Sorted Set类型
+ZADD、ZREM、
+ZRANGE/ZREVRANGE、ZRANGEBYSCORE/ZREVRANGEBYSCORE、ZREMRANGEBYRANK/ZREMRANGEBYSCORE
+第二行时间复杂度 O(log(N)+M)，需要谨慎使用
+
+其他常用命令
+DEL、KEYS
+KEYS 谨慎使用
+
